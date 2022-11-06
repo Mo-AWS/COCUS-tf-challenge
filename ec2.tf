@@ -1,23 +1,21 @@
-
 ### Create an ec2 instance that will be used as web server in public subnet
 resource "aws_instance" "webserver" {
 
-  ami                         = var.ami_id    ### data.aws_ami.instance_ami.id
+  ami                         = var.ami_id
   instance_type               = var.instance_type
   key_name                    = aws_key_pair.websever_key.key_name
   subnet_id                   = aws_subnet.awslab-subnet-public.id
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.public_ports_security_groups.id]
 
-  user_data = <<-EOF
-    #!/bin/bash
-    sudo su
-    yum update -y
-    yum install -y httpd
-    systemctl start httpd.service
-    systemctl enable httpd.service
-    echo "Hello Cocus" > /var/www/html/index.html
-    EOF
+user_data = <<EOF
+  #!/bin/bash
+  sudo yum update -y
+  sudo yum install -y httpd
+  sudo systemctl start httpd.service
+  sudo systemctl enable httpd.service
+  echo "Hello Cocus" > /var/www/html/index.html
+  EOF
 
   tags = {
     Name = "ec2-webserver"
@@ -56,4 +54,3 @@ resource "aws_instance" "mysql-server" {
   }
 
 }
-

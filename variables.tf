@@ -32,24 +32,70 @@ variable "availability_zone_id" {
 
 
 variable "sg_ingress_rules_public" {
-  type = map(list(list(string)))
-  default = {
-    cidr = [
-      ["80", "80", "tcp", "0.0.0.0/0", "open http port from Anywhere-IPv4"],
-      ["0", "65535", "icmp", "0.0.0.0/0", "open icmp traffic on all ports from Anywhere-IPv4"],
-      ["22", "22", "tcp", "0.0.0.0/0", "open ssh port from Anywhere-IPv4"]
-  ] }
+    type = list(object({
+      from_port   = number
+      to_port     = number
+      protocol    = string
+      cidr_block  = string
+      description = string
+    }))
+    default     = [
+        {
+          from_port   = 22
+          to_port     = 22
+          protocol    = "tcp"
+          cidr_block  = "0.0.0.0/0"
+          description = "open ssh port from Anywhere"
+        },
+        {
+          from_port   = -1
+          to_port     = -1
+          protocol    = "icmp"
+          cidr_block  = "0.0.0.0/0"
+          description = "open icmp traffic on all ports from Anywhere"
+        },
+        {
+          from_port   = 80
+          to_port     = 80
+          protocol    = "tcp"
+          cidr_block  = "0.0.0.0/0"
+          description = "open http port from Anywhere"
+        },
+    ]
 }
 
+
 variable "sg_ingress_rules_private" {
-  type = map(list(list(string)))
-  default = {
-    cidr = [
-      ["3110", "3110", "tcp", "172.16.0.0/24", "open tcp port 3110 from vpc cidr"],
-      ["0", "65535", "icmp", "0.0.0.0/0", "open icmp traffic on all ports from Anywhere-IPv4"],
-      ["22", "22", "tcp", "172.16.0.0/24", "open ssh port from vpc cidr"]
+    type = list(object({
+      from_port   = number
+      to_port     = number
+      protocol    = string
+      cidr_block  = string
+      description = string
+    }))
+    default     = [
+        {
+          from_port   = 22
+          to_port     = 22
+          protocol    = "tcp"
+          cidr_block  = "172.16.0.0/24"
+          description = "open ssh port"
+        },
+        {
+          from_port   = 3110
+          to_port     = 3110
+          protocol    = "tcp"
+          cidr_block  = "172.16.0.0/24"
+          description = "open tcp port 3110"
+        },
+        {
+          from_port   = -1
+          to_port     = -1
+          protocol    = "icmp"
+          cidr_block  = "0.0.0.0/0"
+          description = "open icmp port from Anywhere"
+        },
     ]
-  }
 }
 
 variable "sg_egress_rules_public" {
@@ -80,8 +126,3 @@ variable "ami_id" {
     type = string
     default = "ami-070b208e993b59cea"
 }
-
-# variable "instance_key" {
-#   description = "Key name of the Key Pair to use for the instance; which can be managed using the aws_key_pair resource."
-#   type        = string
-# }
