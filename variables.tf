@@ -64,6 +64,24 @@ variable "sg_ingress_rules_public" {
     ]
 }
 
+variable "sg_egress_rules_public" {
+    type = list(object({
+      from_port   = number
+      to_port     = number
+      protocol    = string
+      cidr_block  = string
+      description = string
+    }))
+    default     = [
+        {
+          from_port   = -1
+          to_port     = -1
+          protocol    = "all"
+          cidr_block  = "0.0.0.0/0"
+          description = "open all egress IPv4 traffic for public subnet"
+        },
+    ]
+}
 
 variable "sg_ingress_rules_private" {
     type = list(object({
@@ -96,24 +114,6 @@ variable "sg_ingress_rules_private" {
           description = "open icmp port from Anywhere"
         },
     ]
-}
-
-variable "sg_egress_rules_public" {
-  type = map(list(list(string)))
-  default = {
-    cidr = [
-      ["0", "0", "-1", "0.0.0.0/0", "open all egress IPv4 traffic for public subnet"]
-    ]
-  }
-}
-
-variable "sg_egress_rules_private" {
-  type = map(list(list(string)))
-  default = {
-    cidr = [
-      ["0", "0", "-1", "172.16.0.0/24", "open all egress IPv4 traffic for public subnet"]
-    ]
-  }
 }
 
 variable "instance_type" {

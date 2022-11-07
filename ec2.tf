@@ -1,3 +1,4 @@
+
 ### Create an ec2 instance that will be used as web server in public subnet
 resource "aws_instance" "webserver" {
 
@@ -9,21 +10,20 @@ resource "aws_instance" "webserver" {
   vpc_security_group_ids      = [aws_security_group.public_ports_security_groups.id]
 
 user_data = <<EOF
-  #!/bin/bash
-  sudo yum update -y
-  sudo yum install -y httpd
-  sudo systemctl start httpd.service
-  sudo systemctl enable httpd.service
-  echo "Hello Cocus" > /var/www/html/index.html
-  EOF
-
+#!/bin/bash
+yum update -y
+yum install -y httpd.x86_64
+systemctl start httpd.service
+systemctl enable httpd.service
+echo “Hello World from $(hostname -f)” > /var/www/html/index.html
+EOF
   tags = {
     Name = "ec2-webserver"
   }
 
 }
 
-# Create private key
+# Create private key for webserver
 resource "tls_private_key" "webserver_private_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -38,6 +38,23 @@ resource "local_file" "private_key" {
 resource "aws_key_pair" "websever_key" {
   key_name   = "webserver"
   public_key = tls_private_key.webserver_private_key.public_key_openssh
+}
+
+# Create private key for database
+resource "tls_private_key" "database_private_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+resource "local_file" "private_key_database" {
+  content         = tls_private_key.database_private_key.private_key_pem
+  filename        = "database_key.pem"
+  file_permission = 0400
+}
+
+# add private key to aws file
+resource "aws_key_pair" "database_key" {
+  key_name   = "database"
+  public_key = tls_private_key.database_private_key.public_key_openssh
 }
 
 
